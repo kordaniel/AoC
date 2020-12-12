@@ -1,37 +1,39 @@
-with open('input.txt', 'r') as f:
-    lines = f.read().splitlines()
+import sys
+sys.path.insert(0, '..')
 
-validCount = 0
+from helpers import filemap
 
-def handleLine(l):
-    # Part one
-    req, passwd = l.split(':')
-    min_req, max_req = req.split()[0].split('-')
-    min_req, max_req = int(min_req), int(max_req)
+def passwd_has_correct_amount_of_req_char(l):
+    # Validator for part one
+    req, passwd = l
+    min_req, max_req = map(int, req.split()[0].split('-'))
     char = req.split()[1]
+    return min_req <= len([c for c in passwd if c == char]) <= max_req
 
-    count = 0
-    for c in passwd:
-        #print(c)
-        if c == char:
-            count += 1
-        if count > max_req:
-            return False
-
-    return count >= min_req
-
-
-def handle_line(l):
-    # Part 2
-    req, passwd = l.split(': ') # Cut blank away
-    first_req, second_req = req.split()[0].split('-')
-    first_req, second_req = int(first_req)-1, int(second_req)-1
+def passwd_has_correct_char_in_specific_indx(l):
+    ''' "Exactly one of these positions must contain the given letter!"
+         Positions start indexing from 1, not 0.
+    '''
+    # Validator for part two. Offset index in lambdafunction.
+    req, passwd = l
+    first_req, second_req = map(lambda v: int(v) - 1, req.split()[0].split('-'))
     char = req.split()[1]
-    return (passwd[first_req] == char or passwd[second_req] == char) and (passwd[first_req] != passwd[second_req])
+    return (passwd[first_req] == char or passwd[second_req] == char) \
+            and (passwd[first_req] != passwd[second_req])
 
-for r in lines:
-    #print(r)
-    if handle_line(r):
-        validCount += 1
+def valid_lines_count(data, func):
+    return sum([func(l) for l in data])
 
-print('Valid lines count:', validCount)
+
+def main():
+    lines = filemap('input.txt', lambda s: s.split(': '))
+
+    valid_passwds_p1 = valid_lines_count(lines, passwd_has_correct_amount_of_req_char)
+    valid_passwds_p2 = valid_lines_count(lines, passwd_has_correct_char_in_specific_indx)
+
+    print('Part1:', valid_passwds_p1)
+    print('Part2:', valid_passwds_p2)
+
+
+if __name__ == '__main__':
+    main()

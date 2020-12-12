@@ -1,23 +1,18 @@
+import sys
+sys.path.insert(0, '..')
+
+from helpers import filemap
 import re
 
-valid_eyecolors = ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth')
-
-def test_byr(val):
-    if not val.isdigit():
-        return False
-    return 1919 < int(val) < 2003
-
-def test_iyr(val):
-    if not val.isdigit():
-        return False
-    return 2009 < int(val) < 2021
-
-def test_eyr(val):
-    if not val.isdigit():
-        return False
-    return 2019 < int(val) < 2031
-
-def test_hgt(val):
+# Validators
+def test_byr(val): return val.isdigit() and 1919 < int(val) < 2003 # Birth year
+def test_iyr(val): return val.isdigit() and 2009 < int(val) < 2021 # Issue year
+def test_eyr(val): return val.isdigit() and 2019 < int(val) < 2031 # Expiration year
+def test_pid(val): return val.isdigit() and len(val) == 9          # Passport ID
+def test_ecl(val): return val in valid_eyecolors                   # Eye color
+def test_hcl(val): return re.match('^#[0-9|a-f]{6}$', val)         # Hair color
+def test_cid(val): return True # Should be ignored, always True    # Country ID
+def test_hgt(val):                                                 # Height
     min, max = 0,0
     if val.endswith('cm'):
         min, max = 149, 194
@@ -32,50 +27,10 @@ def test_hgt(val):
     except:
         return False
 
-
-def test_hcl(val):
-    '''
-    Returns match-object or None
-    '''
-    return re.match('^#[0-9|a-f]{6}$', val)
-    #if not re.match('^#[0-9|a-f]{6}', val):
-        #print(val)
-        #return False
-    #return True
-
-def test_ecl(val):
-    return val in valid_eyecolors
-    #'''
-    #Returns match-object or None
-    #'''
-    #return re.match('^(amb|blu|brn|gry|grn|hzl|oth)$', val)
-
-def test_pid(val):
-    return len(val) == 9 and val.isdigit()
-
-def test_cid(val):
-    return True
-
-req_fields = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid', 'cid')
+valid_eyecolors = ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth')
+req_fields  = (    'byr',    'iyr',    'eyr',    'hgt',    'hcl',    'ecl',    'pid',    'cid')
 field_tests = (test_byr, test_iyr, test_eyr, test_hgt, test_hcl, test_ecl, test_pid, test_cid)
-fields_reqs = dict(zip(req_fields, field_tests))
-#print(fields_reqs)
-#{
-#    'byr': test_byr,
-#    'iyr': ETCETC
-#    'eyr': JNE
-#    'hgt': ,
-#    'hcl',
-#    'ecl',
-#    'pid',
-#    'cid'
-#}
-
-def read_inpt():
-    content = None
-    with open('input.txt', 'r') as f:
-        content = f.read().split('\n\n')
-    return [pp.strip() for pp in content]
+validators = dict(zip(req_fields, field_tests))
 
 def filter_passports(passports, required_fields = req_fields):
     required_fields = tuple(map(lambda f: f + ':', required_fields))
@@ -86,29 +41,29 @@ def filter_passports(passports, required_fields = req_fields):
         return True
     return list(filter(tester, passports))
 
-def check_passport_fields(passprt):
+def validate_passport_fields(passprt):
     fields = passprt.split()
 
     for f in fields:
         field, val = f.split(':')
-        if not fields_reqs[field](val):
+        if not validators[field](val):
             return False
 
     return True
 
+def valid_passport_fields_count(passports):
+    return sum([validate_passport_fields(pp) for pp in passports])
+
+
 def main():
-    valid_passprts_count = 0
+    data = filemap('input.txt', lambda s: s.strip(), '\n\n')
 
-    passprts_with_req_fields = filter_passports(read_inpt(), req_fields[:-1]) # 'cid:' is optional => ignore it
-    for pp in passprts_with_req_fields:
-        valid_passprts_count += check_passport_fields(pp)
-    print(valid_passprts_count)
+    passports_with_req_fields = filter_passports(data, req_fields[:-1]) # 'cid:' is optional => ignore it
+    pp_req_fields_count = len(passports_with_req_fields)
+    pp_valid_fields_count = valid_passport_fields_count(passports_with_req_fields)
 
-    # Boolean array containing true for every valid passport
-    ppp = [check_passport_fields(pp) for pp in passprts_with_req_fields]
-    print('valid passports:  ', sum(ppp))
-    # Flip bool
-    print('invalid passports:', sum([not pp for pp in ppp]))
+    print('Part1, passports with required fields:', pp_req_fields_count)
+    print('Part2, passports with valid fields   :', pp_valid_fields_count)
 
 
 if __name__ == '__main__':
