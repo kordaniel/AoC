@@ -42,10 +42,10 @@ def prob1(input: List[List[Cell]]) -> int:
     return can_access_cnt
 
 
-def remove_roll(grid: List[List[int]], y: int, x: int):
-    for dy in range(max(0, y-1), min(len(grid), y+2)):
-        for dx in range(max(0, x-1), min(len(grid[dy]), x+2)):
-            grid[dy][dx] = max(0, grid[dy][dx]-1)
+def remove_roll(neighbours_map: List[List[int]], y: int, x: int):
+    for dy in range(max(0, y-1), min(len(neighbours_map), y+2)):
+        for dx in range(max(0, x-1), min(len(neighbours_map[dy]), x+2)):
+            neighbours_map[dy][dx] = max(0, neighbours_map[dy][dx]-1)
 
 def remove_all_rolls(grid: List[List[Cell]], neighbours_map: List[List[int]]) -> int:
     removed_rolls_cnt = 0
