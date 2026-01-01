@@ -94,10 +94,9 @@ def prob1(input: List[Point3D], connections_cnt: int) -> int:
     return math.prod(circuit_sizes[:3])
 
 def prob2(input: List[Point3D]) -> int:
-    distances, distlist = compute_distances(input)
+    _, distlist = compute_distances(input)
     circuits: List[Set[int]] = list()
 
-    orphan_nodes = set(distances.keys())
     last_added_pair = None
 
     while len(distlist) > 0:
@@ -122,19 +121,16 @@ def prob2(input: List[Point3D]) -> int:
 
         if len(matching_indexes) == 0:
             last_added_pair = (a, b)
-            if a in orphan_nodes: orphan_nodes.remove(a)
-            if b in orphan_nodes: orphan_nodes.remove(b)
             circuits.append({a, b})
         elif len(matching_indexes) == 1:
             last_added_pair = (a, b)
-            if a in orphan_nodes: orphan_nodes.remove(a)
-            if b in orphan_nodes: orphan_nodes.remove(b)
             circuits[matching_indexes[0]].add(a)
             circuits[matching_indexes[0]].add(b)
         elif len(matching_indexes) == 2:
             last_added_pair = (a, b)
             circuits[matching_indexes[0]] |= circuits[matching_indexes[1]]
-            del circuits[matching_indexes[1]]
+            circuits[matching_indexes[1]].clear()
+            #del circuits[matching_indexes[1]]
         else:
             print("Logic error")
 
